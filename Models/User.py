@@ -1,12 +1,14 @@
-# user entity definition
+# # user entity definition
+# from pydantic import BaseModel
 
-class User():
-    def __init__(self):
-        self.id = None
-        self.first_name = None
-        self.last_name = None
-        self.age = None
-        self.email = None
-        self.password_hash = None
-        self.password_salt = None
-        self.profile_url = None # Bonus, as noted in the documents
+
+# class User(BaseModel):
+#     def __init__(self):
+#         self.id : int = None
+#         self.first_name : str = None
+#         self.last_name : str = None
+#         self.age : int = None
+#         self.email : str = None
+#         self.password_hash : str = None
+#         self.password_salt : str = None
+#         self.profile_url : str = None # Bonus, as noted in the documents
