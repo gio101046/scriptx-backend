@@ -1,6 +1,6 @@
 #User can add subscription, edit a subscription, delete a subscription(s), get subscriptions 
 # API for subscriptions
-from fastapi import FastAPI
+from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date
@@ -16,9 +16,9 @@ class Subscription(BaseModel):
     notes : str # Any additional notes
     # Bonus: Category
 
-app = FastAPI()
+subscription_router = APIRouter()
 
-@app.get('/subscriptions')
+@subscription_router.get('/subscription')
 def get_subs(sub : Subscription):
     # this one may be a bit trickier
     # as it should retrieve all
@@ -26,13 +26,13 @@ def get_subs(sub : Subscription):
     # and not necessarily based on the subscrpition id
     return {}
 
-@app.post('/add_subscription')
-def add_sub(sub : Subscription):
+@subscription_router.post('/subscription')
+def add_sub(sub: Subscription):
     # this should add
     # a new subscription to the database
     return {}
 
-@app.put('/edit_subscription/{sub.id}')
+@subscription_router.put('/subscription')
 def update_sub(sub: Subscription):
     # this should retrieve the data
     # from the referenced subscription
@@ -40,8 +40,8 @@ def update_sub(sub: Subscription):
     # it in editable fields for editing
     return {}
 
-@app.delete('/delete_subscription/{sub.id}')
-def delete_sub(sub : Subscription):
+@subscription_router.delete('/subscription/{sub.id}')
+def delete_sub():
     # this should delete the
     # specific subscription
     # from the database
