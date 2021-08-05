@@ -3,29 +3,38 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+db = []
 
 class User(BaseModel):
-    def __init__(self):
-        self.id : int = None
-        self.first_name : str = None
-        self.last_name : str = None
-        self.age : int = None
-        self.email : str = None
-        self.password_hash : str = None
-        self.password_salt : str = None
-        self.profile_url : str = None # Bonus, as noted in the documents
+        id : int 
+        first_name : str
+        last_name : str
+        age : int 
+        email : str 
+        password_hash : str
+        password_salt : str
+        profile_url : str # Bonus, as noted in the documents
 
 app = FastAPI()
 
-db = []
+@app.get('/user/{user.id}')
+def get_user(id : int):
+    return db[id - 1]
 
-@app.get('/')
-def index():
-    return {'key' : 'value'}
+@app.post('/user') # this is a test point, comment it out
+def add_user(user: User):
+    db.append(user.dict())
+    return db[-1]
 
-@app.post('/user/{user.id}')
+
+@app.put('/user/{user.id}')
 def update_profile(user : User):
-    db[user.id] = user.dict()
-    return db[user.id]
+    db[user.id - 1] = user.dict()
+    return db[user.id - 1]
+
+@app.delete('/user/{user.id}')
+def delete_profile(user: User):
+    db.pop(user.id - 1)
+    return {}
 
 
