@@ -25,3 +25,6 @@ typing-extensions==3.10.0.0
 uvicorn==0.14.0
 wrapt==1.12.1
 wsproto==1.0.0
+
+PyJWT~=2.1.0
+pg~=0.1

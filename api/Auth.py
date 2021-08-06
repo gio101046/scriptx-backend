@@ -1,14 +1,19 @@
 import jwt
-from fastapi import FastAPI, Depends, HTTPException, status
+#from pg import DB
+from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.hash import bcrypt
 from tortoise import fields
-from tortoise.contrib.fastapi import register_tortoise
+#from tortoise.contrib.fastapi import register_tortoise
 from tortoise.contrib.pydantic import pydantic_model_creator
 from tortoise.models import Model
- #move imports and user class to model folder---------------------------------------------------------------------------
 
 app = FastAPI()
+
+
+#db = DB(dbname = 'd3jfo8beuvlij2', host = 'ec2-18-213-219-169.compute-1.amazonaws.com', port = 5432,
+#user = 'gsagfaitckbinb', passwd = '765e48b89e69ced052680a62c18c93d31bffd89751172132fc9adfbf54b200f8')
+
 
 JWT_SECRET = 'myjwtsecret'
 
@@ -22,6 +27,7 @@ class User(Model):
         return bcrypt.verify(password, self.password_hash)
 
 
+auth_router = APIRouter()
 User_Pydantic = pydantic_model_creator(User, name='User')
 UserIn_Pydantic = pydantic_model_creator(User, name='UserIn', exclude_readonly=True)
 
@@ -37,7 +43,7 @@ async def authenticate_user(username: str, password: str):
     return user
 
 
-@app.post('/token')
+@auth_router.post('/token')
 async def generate_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user = await authenticate_user(form_data.username, form_data.password)
 
@@ -65,21 +71,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return await User_Pydantic.from_tortoise_orm(user)
 
 
-@app.post('/users', response_model=User_Pydantic)
+@auth_router.post('/users', response_model=User_Pydantic)
 async def create_user(user: UserIn_Pydantic):
     user_obj = User(username=user.username, password_hash=bcrypt.hash(user.password_hash))
     await user_obj.save()
     return await User_Pydantic.from_tortoise_orm(user_obj)
 
 
-@app.get('/user/me', response_model=User_Pydantic)
+@auth_router.get('/user/me', response_model=User_Pydantic)
 async def get_user(user: User_Pydantic = Depends(get_current_user)):
     return user  # if authenticated user has logged in to the main screen--------------------------------------------
 
-register_tortoise(
-    app,
-    db_url='',  # requires postgres db-------------------------------------------------------------------------------
-    modules={'models': ['Auth']},
-    generate_schemas=True,
-    add_exception_handlers=True
-)
