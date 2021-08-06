@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date
+from data import subscriptions_cache
 
 # Schema
 class Subscription(BaseModel):
@@ -18,31 +19,50 @@ class Subscription(BaseModel):
 
 subscription_router = APIRouter()
 
-@subscription_router.get('/subscription')
-def get_subs(sub : Subscription):
-    # this one may be a bit trickier
-    # as it should retrieve all
-    # subscriptions bearing a specific user id
-    # and not necessarily based on the subscrpition id
-    return {}
+@subscription_router.get('/subscription/{userId}')
+def get_subsciptions(userId: int):
+    return subscriptions_cache[userId] # <-- list of all subscriptions for user
 
-@subscription_router.post('/subscription')
-def add_sub(sub: Subscription):
-    # this should add
-    # a new subscription to the database
-    return {}
+@subscription_router.post('/subscription/{userId}')
+def add_subscription(userId: int, subscription: Subscription):
+    # check to make sure key is not already in cache
+    if userId not in subscriptions_cache:
+        subscriptions_cache[userId] = []
 
-@subscription_router.put('/subscription')
-def update_sub(sub: Subscription):
-    # this should retrieve the data
-    # from the referenced subscription
-    # in the list and display
-    # it in editable fields for editing
-    return {}
+    # add subscription to cache for user
+    subscriptions_cache[userId].append(subscription)
+    return subscription
 
-@subscription_router.delete('/subscription/{sub.id}')
-def delete_sub():
-    # this should delete the
-    # specific subscription
-    # from the database
-    return {}
+@subscription_router.put('/subscription/{userId}')
+def update_subscription(userId: int, subscription: Subscription):
+    # TODO: check to make sure userId exists in cache
+
+    index_of_subscription = -1
+    for i, cached_subscription in enumerate(subscriptions_cache[userId]):
+        if cached_subscription.id == subscription.id:
+            index_of_subscription = i
+            break
+
+    if index_of_subscription == -1:
+        return None
+    
+    subscriptions_cache[userId].pop(index_of_subscription)
+    subscriptions_cache[userId].append(subscription)
+
+    return subscription
+
+@subscription_router.delete('/subscription/{subscriptionId}/{userId}')
+def delete_subscription(userId: int, subscriptionId: int):
+    # TODO: check to make sure userId exists in cache
+    
+    index_of_subscription = -1
+    for i, cached_subscription in enumerate(subscriptions_cache[userId]):
+        if cached_subscription.id == subscriptionId:
+            index_of_subscription = i
+            break
+
+    if index_of_subscription == -1:
+        return None
+
+    removed_subscription = subscriptions_cache[userId].pop(index_of_subscription)
+    return removed_subscription
